@@ -1,0 +1,11 @@
+{
+  "generator-nuxeo": {
+    "promptValues": {
+      "parent_package": "org.nuxeo.lifeins",
+      "parent_artifact": "nuxeo-lifeinsurance-app-parent",
+      "nuxeo_version": "8.1",
+      "package": "org.nuxeo.lifeins"
+    },
+    "multi": true
+  }
+}
