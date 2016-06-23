@@ -1,0 +1,104 @@
+<!--
+@license
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+-->
+
+<dom-module id="app-main">
+    <style>
+    :host {
+     height: 100%;
+    }
+    </style>
+    <template>
+        <nuxeo-resource auto id="taskLoader" path="task?workflowModelName=LifeInsuranceApplicationForm" on-response="_onTasksReceived"></nuxeo-resource>
+        <nuxeo-resource id="layoutLoader" on-response="_onLayoutReceived"></nuxeo-resource>
+        <nuxeo-document id="applicationGetter" doc-id="{{applicationId}}" on-response="_onApplicationReceived"></nuxeo-document>
+        <form is="iron-form" method="get" action="/" id="taskform">
+           <nuxeo-labs-layout doc="[[doc]]" layout="[[layout]]" mode="edit"></nuxeo-layout>
+         </form>
+         <template is="dom-repeat" items="{{actions}}">
+            <paper-button raised onclick="_runAction">{{item.label}}</paper-button>
+         </template>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'app-main',
+
+            properties: {
+               layoutBasePath : {
+                  type: String,
+                  value: "../../site/layout-manager/layouts/json?layoutName=",
+                  readOnly: true
+               },
+            },
+
+            ready: function() {
+                console.log("--app ready");
+                var context = this;
+                this.$.taskform.addEventListener('change', function(event) {
+                  console.log("--app form changed");
+                   // Validate the entire form to see if we should enable the `Submit` button.
+                   context.$.taskform.validate();
+               });
+            },
+
+            _onTasksReceived(e) {
+                var docs = e.detail.response.entries;
+                this.currentTasks = docs[0];
+                this.applicationId =  this.currentTasks.targetDocumentIds[0].id;
+                //get application document
+                this.$.applicationGetter.execute();
+                //Get task layout
+                var layoutName = this.currentTasks.taskInfo.layoutResource.name;
+                this.$.layoutLoader.path = this.layoutBasePath+layoutName;
+                this.$.layoutLoader.execute();
+                //get actions
+                this.actions =  this.currentTasks.taskInfo.taskActions;
+            },
+
+            _onLayoutReceived: function(e) {
+               var response = e.detail.response;
+               var context = this;
+               if (response instanceof Response) {
+                   response.json().then(function(result) {
+                     context._setLayout(result);
+                  });
+               } else {
+                   context._setLayout(response);
+               }
+            },
+
+            _onApplicationReceived: function(e) {
+               this.doc = e.detail.response;
+            },
+
+            _setLayout: function(layout) {
+               if (this.layoutName!==undefined) {
+                  this.layout = layout;
+               } else {
+                  //get actual layout...
+                  this.layoutName = layout.widgets[0].propertiesByWidgetMode.edit.layoutName;
+                  this.$.layoutLoader.path = this.layoutBasePath+this.layoutName;
+                  this.$.layoutLoader.execute();
+               }
+            }
+
+        });
+    </script>
+
+</dom-module>
