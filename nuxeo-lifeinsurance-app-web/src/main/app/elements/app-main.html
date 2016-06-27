@@ -19,85 +19,31 @@ Contributors:
 
 <dom-module id="app-main">
     <style>
-    :host {
-     height: 100%;
-    }
+       :host {
+        height: 100%;
+       }
+
+       .task {
+          width:50%;
+          margin: auto;
+       }
+
     </style>
     <template>
-        <nuxeo-resource auto id="taskLoader" path="task?workflowModelName=LifeInsuranceApplicationForm" on-response="_onTasksReceived"></nuxeo-resource>
-        <nuxeo-resource id="layoutLoader" on-response="_onLayoutReceived"></nuxeo-resource>
-        <nuxeo-document id="applicationGetter" doc-id="{{applicationId}}" on-response="_onApplicationReceived"></nuxeo-document>
-        <form is="iron-form" method="get" action="/" id="taskform">
-           <nuxeo-labs-layout doc="[[doc]]" layout="[[layout]]" mode="edit"></nuxeo-layout>
-         </form>
-         <template is="dom-repeat" items="{{actions}}">
-            <paper-button raised onclick="_runAction">{{item.label}}</paper-button>
-         </template>
+        <div class="task">
+            <insurance-application-workflow process-id="123"></insurance-application-workflow>
+        </div>
     </template>
 
     <script>
         Polymer({
             is: 'app-main',
 
-            properties: {
-               layoutBasePath : {
-                  type: String,
-                  value: "../../site/layout-manager/layouts/json?layoutName=",
-                  readOnly: true
-               },
-            },
+            properties: {},
 
             ready: function() {
                 console.log("--app ready");
-                var context = this;
-                this.$.taskform.addEventListener('change', function(event) {
-                  console.log("--app form changed");
-                   // Validate the entire form to see if we should enable the `Submit` button.
-                   context.$.taskform.validate();
-               });
             },
-
-            _onTasksReceived(e) {
-                var docs = e.detail.response.entries;
-                this.currentTasks = docs[0];
-                this.applicationId =  this.currentTasks.targetDocumentIds[0].id;
-                //get application document
-                this.$.applicationGetter.execute();
-                //Get task layout
-                var layoutName = this.currentTasks.taskInfo.layoutResource.name;
-                this.$.layoutLoader.path = this.layoutBasePath+layoutName;
-                this.$.layoutLoader.execute();
-                //get actions
-                this.actions =  this.currentTasks.taskInfo.taskActions;
-            },
-
-            _onLayoutReceived: function(e) {
-               var response = e.detail.response;
-               var context = this;
-               if (response instanceof Response) {
-                   response.json().then(function(result) {
-                     context._setLayout(result);
-                  });
-               } else {
-                   context._setLayout(response);
-               }
-            },
-
-            _onApplicationReceived: function(e) {
-               this.doc = e.detail.response;
-            },
-
-            _setLayout: function(layout) {
-               if (this.layoutName!==undefined) {
-                  this.layout = layout;
-               } else {
-                  //get actual layout...
-                  this.layoutName = layout.widgets[0].propertiesByWidgetMode.edit.layoutName;
-                  this.$.layoutLoader.path = this.layoutBasePath+this.layoutName;
-                  this.$.layoutLoader.execute();
-               }
-            }
-
         });
     </script>
 

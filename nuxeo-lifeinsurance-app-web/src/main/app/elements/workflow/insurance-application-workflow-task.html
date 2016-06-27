@@ -1,0 +1,117 @@
+<!--
+@license
+(C) Copyright 2016 Nuxeo SA (http://nuxeo.com/) and others.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Contributors:
+-->
+
+<dom-module id="insurance-application-workflow-task">
+    <style>
+      nuxeo-labs-layout {
+         margin: 3%;
+      }
+    </style>
+    <template>
+      <form is="iron-form" id="taskForm">
+         <nuxeo-connection id="nx"></nuxeo-connection>
+         <nuxeo-resource id="layoutLoader" on-response="_onLayoutReceived"></nuxeo-resource>
+         <nuxeo-document id="applicationGetter" doc-id="[[applicationId]]" on-response="_onApplicationReceived"></nuxeo-document>
+         <nuxeo-labs-layout doc="{{applicationDoc}}" layout="[[taskLayout]]" mode="edit"></nuxeo-labs-layout>
+         <nuxeo-document id="applicationSetter" method="PUT" doc-id="[[applicationId]]" data=[[applicationDoc]] on-response="_onApplicationUpdated"></nuxeo-document>
+         <nuxeo-resource id="taskExecutor" method="PUT" on-response="_onTasksCompleted"></nuxeo-resource>
+      </form>
+      <template is="dom-repeat" items="{{actions}}">
+         <paper-button raised on-click="_runAction">{{item.label}}</paper-button>
+      </template>
+    </template>
+
+    <script>
+        Polymer({
+            is: 'insurance-application-workflow-task',
+
+            properties: {
+               task : {
+                  type:Object,
+                  observer: '_onTaskChanged'
+               }
+            },
+
+            ready: function() {
+                console.log("--nuxeo-wf-task ready");
+            },
+
+            _onTaskChanged: function() {
+                this.applicationId =  this.task.targetDocumentIds[0].id;
+                //get application document
+                this.$.applicationGetter.execute();
+                //Get task layout
+                var layoutName = this.task.taskInfo.layoutResource.name;
+                this.$.layoutLoader.path =  "../../site/layout-manager/layouts/json?layoutName="+layoutName;
+                this.$.layoutLoader.execute();
+                //get actions
+                this.actions =  this.task.taskInfo.taskActions;
+            },
+
+            _onLayoutReceived: function(e) {
+               var response = e.detail.response;
+               var context = this;
+               if (response instanceof Response) {
+                   response.json().then(function(result) {
+                     context._setLayout(result);
+                  });
+               } else {
+                   context._setLayout(response);
+               }
+            },
+
+            _onApplicationReceived: function(e) {
+               this.applicationDoc = e.detail.response;
+            },
+
+            _setLayout: function(layout) {
+               if (this.layoutName!==undefined) {
+                  this.taskLayout = layout;
+                  this.layoutName = undefined;
+               } else {
+                  //get actual layout...
+                  this.layoutName = layout.widgets[0].propertiesByWidgetMode.edit.layoutName;
+                  this.$.layoutLoader.path = "../../site/layout-manager/layouts/json?layoutName="+this.layoutName;
+                  this.$.layoutLoader.execute();
+               }
+            },
+
+             _runAction: function(e) {
+               this.action = e.model.item;
+               //validate form
+               if (!this.$.taskForm.validate()) return;
+               //Update Application Document
+               this.$.applicationSetter.execute();
+            },
+
+            _onApplicationUpdated: function(e) {
+               //continue task
+               this.$.taskExecutor.path = this.action.url.replace(this.$.nx.url+'/site/api/v1/','');
+               this.$.taskExecutor.data = this.task;
+               this.$.taskExecutor.execute();
+            },
+
+            _onTasksCompleted: function() {
+               this.fire('task-completed', {kicked: true});
+            }
+
+        });
+    </script>
+
+</dom-module>
