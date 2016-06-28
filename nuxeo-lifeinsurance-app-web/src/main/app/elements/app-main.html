@@ -18,33 +18,171 @@ Contributors:
 -->
 
 <dom-module id="app-main">
-    <style>
-       :host {
-        height: 100%;
-       }
+  <style>
+    :host {
+      height: 100%;
+    }
 
-       .task {
-          width:50%;
-          margin: auto;
-       }
+    .task {
+      width: 50%;
+      margin: auto;
+    }
 
-    </style>
-    <template>
-        <div class="task">
+    #sidebar > div {
+      margin-left: 60px;
+      overflow: hidden;
+    }
+
+    #sidebar .content {
+      font-size: .9rem;
+      @apply(--layout-flex);
+      @apply(--layout-vertical);
+      overflow: auto;
+      width: 290px;
+      height: calc(100vh - 59px);
+    }
+
+    #sidebar .card .header {
+      height: 59px;
+      background-color: var(--nuxeo-light-background);
+      border-bottom: var(--nuxeo-border);
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+
+    #sidebar .card h1 {
+      color: var(--nuxeo-tag-text);
+      text-transform: uppercase;
+      font-size: 1rem;
+      margin: .1em .2em 0 1.1em;
+      font-weight: 500;
+    }
+
+    #sidebar .item {
+      display: block;
+      padding: 1em;
+    }
+
+      #sidebar .tasks .link {
+      font-size: 1.2em;
+      padding: 1em 1em 2em 1em;
+      text-align: center;
+    }
+
+    #sidebar .profile .item:last-of-type {
+      @apply(--layout-flex);
+      @apply(--layout-vertical);
+      border: none;
+      justify-content: flex-end;
+    }
+
+    .side-nav {
+      padding: 60px 0;
+      overflow: auto;
+      height: 100%;
+      position: fixed;
+      width: 60px;
+      padding-top: 0;
+      z-index: 100;
+    }
+
+    .side-nav .profile-icon {
+      bottom: 0;
+      position: fixed;
+      left: 0;
+      height: 59px;
+    }
+  </style>
+  <template>
+
+    <paper-drawer-panel drawer-width="[[drawerWidth]]" responsive-width="720px">
+      <div drawer>
+        <paper-icon-button src="[[baseUrl]]images/touch/icon-128x128.png" class="logo"></paper-icon-button>
+        <paper-menu class="side-nav" selected="{{selectedTab}}" attr-for-selected="name" on-iron-activate="_toggleDrawer">
+          <paper-icon-button icon="icons:folder-open" name="browser"></paper-icon-button>
+          <div class="icon-badge" name="tasks">
+            <paper-icon-button icon="icons:check-box" name="tasks" id="tasksCounter"></paper-icon-button>
+            <paper-badge label="[[taskCount]]" class="header-badge" for="tasksCounter"></paper-badge>
+          </div>
+        </paper-menu>
+        <iron-collapse id="sidebar" horizontal opened>
+          <div>
+            <iron-pages selected="[[selectedTab]]" attr-for-selected="name" class="flex">
+              <section class="card browse" name="browser">
+                <div class="header ellipsis">
+                  <h1>Browse</h1>
+                </div>
+                <div class="content">
+                  some browseing
+                </div>
+              </section>
+
+              <section class="card tasks" name="tasks">
+                <div class="header ellipsis">
+                  <h1>Tasks</h1>
+                </div>
+                <div class="content layout vertical">
+                  The task list
+                </div>
+              </section>
+            </iron-pages>
+          </div>
+        </iron-collapse>
+
+
+      </div>
+      <paper-header-panel main>
+        <paper-toolbar>
+          <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+          <div>Title</div>
+        </paper-toolbar>
+        <div> Main content...
+          <div class="task">
             <insurance-application-workflow process-id="123"></insurance-application-workflow>
+          </div>
         </div>
-    </template>
 
-    <script>
-        Polymer({
-            is: 'app-main',
+      </paper-header-panel>
+    </paper-drawer-panel>
+  </template>
 
-            properties: {},
+  <script>
+    Polymer({
+      is: 'app-main',
 
-            ready: function() {
-                console.log("--app ready");
-            },
-        });
-    </script>
+      properties: {
+        drawerWidth: {
+          type: String,
+          value: '60px'
+        },
+        drawerOpened: {
+          type: Boolean,
+          value: false
+        },
+        selectedTab: {
+          type: String,
+          notiy: true
+        }
+      },
+
+      ready: function() {
+        console.log("--app ready");
+      },
+      _toggleDrawer: function(e) {
+        console.log('toggle browser called');
+        if (this._selected === e.detail.selected && this.drawerOpened) {
+          console.log('close');
+          this.drawerWidth = '60px';
+          this.drawerOpened = false;
+        } else {
+          console.log('open');
+          this.drawerWidth = '350px';
+          this.$.sidebar.style.width = '100%';
+          this.drawerOpened = true;
+        }
+        this._selected = e.detail.selected;
+      }
+    });
+  </script>
 
 </dom-module>
