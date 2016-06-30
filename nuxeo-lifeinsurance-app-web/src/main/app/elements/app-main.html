@@ -63,7 +63,7 @@ Contributors:
       padding: 1em;
     }
 
-      #sidebar .tasks .link {
+    #sidebar .tasks .link {
       font-size: 1.2em;
       padding: 1em 1em 2em 1em;
       text-align: center;
@@ -92,38 +92,47 @@ Contributors:
       left: 0;
       height: 59px;
     }
+
+    .header-badge {
+      left: 33px !important;
+      top: 6px !important;
+      position: absolute;
+    }
+
+    .icon-badge {
+      position: relative;
+    }
   </style>
   <template>
-
+    <nuxeo-resource id="taskLoader" on-response="_onTasksReceived" path="task?workflowModelName=LifeInsuranceApplicationForm"></nuxeo-resource>
     <paper-drawer-panel drawer-width="[[drawerWidth]]" responsive-width="720px">
       <div drawer>
-        <paper-icon-button src="[[baseUrl]]images/touch/icon-128x128.png" class="logo"></paper-icon-button>
+        <paper-icon-button src="[[baseUrl]]images/touch/icon-128x128.png" class="logo" on-tap="_goHome"></paper-icon-button>
+
         <paper-menu class="side-nav" selected="{{selectedTab}}" attr-for-selected="name" on-iron-activate="_toggleDrawer">
-          <paper-icon-button icon="icons:folder-open" name="browser"></paper-icon-button>
+          <paper-icon-button icon="icons:folder-open" name="Pending Applications"></paper-icon-button>
           <div class="icon-badge" name="tasks">
-            <paper-icon-button icon="icons:check-box" name="tasks" id="tasksCounter"></paper-icon-button>
+            <paper-icon-button icon="icons:check-box" name="Tasks" id="tasksCounter"></paper-icon-button>
             <paper-badge label="[[taskCount]]" class="header-badge" for="tasksCounter"></paper-badge>
           </div>
         </paper-menu>
         <iron-collapse id="sidebar" horizontal opened>
           <div>
             <iron-pages selected="[[selectedTab]]" attr-for-selected="name" class="flex">
-              <section class="card browse" name="browser">
+              <section class="card browse" name="Pending Applications">
                 <div class="header ellipsis">
-                  <h1>Browse</h1>
+                  <h1>All Applications</h1>
                 </div>
                 <div class="content">
-                  some browseing
+                  Here the application
                 </div>
               </section>
 
-              <section class="card tasks" name="tasks">
+              <section class="card tasks" name="Tasks">
                 <div class="header ellipsis">
                   <h1>Tasks</h1>
                 </div>
-                <div class="content layout vertical">
-                  The task list
-                </div>
+                <nuxeo-tasks-list id="tasks-list" tasks="[[tasks]]" current="[[currentTask]]"  class="flex"></nuxeo-tasks-list>
               </section>
             </iron-pages>
           </div>
@@ -134,13 +143,15 @@ Contributors:
       <paper-header-panel main>
         <paper-toolbar>
           <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
-          <div>Title</div>
+          <div>[[page]]</div>
         </paper-toolbar>
-        <div> Main content...
-          <div class="task">
-            <insurance-application-workflow process-id="123"></insurance-application-workflow>
-          </div>
-        </div>
+        <div>
+          <iron-pages selected="[[page]]" attr-for-selected="name" class="flex">
+            <div name="Home">Home</div>
+            <div name="Pending Applications">All Applications</div>
+            <div name="Tasks" class="task">
+              <insurance-application-workflow process-id="123"></insurance-application-workflow>
+            </div>
 
       </paper-header-panel>
     </paper-drawer-panel>
@@ -162,14 +173,48 @@ Contributors:
         selectedTab: {
           type: String,
           notiy: true
+        },
+        tasks: Array,
+
+        applications: Array,
+
+        currentApplication: {
+          type: Object,
+          notify: true,
+        },
+
+        taskCount: {
+          type: Number,
+          notify: true,
+        },
+
+        currentTask: {
+          type: Object,
+          notify: true,
+        },
+
+        page: {
+          type: String,
+          notify: true,
+          value: 'home',
         }
+
+
+
+
       },
 
       ready: function() {
-        console.log("--app ready");
+        console.log("--main app ready");
+        this.addEventListener('task-completed', function(e) {
+          this.$.taskLoader.execute();
+        });
+        this.$.taskLoader.execute();
+
       },
       _toggleDrawer: function(e) {
         console.log('toggle browser called');
+        this.page = e.detail.selected;
         if (this._selected === e.detail.selected && this.drawerOpened) {
           console.log('close');
           this.drawerWidth = '60px';
@@ -181,7 +226,21 @@ Contributors:
           this.drawerOpened = true;
         }
         this._selected = e.detail.selected;
-      }
+      },
+
+      _onTasksReceived: function(e) {
+        this.tasks = e.detail.response.entries;
+        this.taskCount = this.tasks.length;
+        console.log(this.tasks);
+        console.log(this.taskCount);
+      },
+
+      _goHome: function(e) {
+        console.log('GoHome');
+        this.page = 'Home';
+        this.drawerWidth = '60px';
+        this.drawerOpened = false;
+      },
     });
   </script>
 
