@@ -22,6 +22,10 @@ Contributors:
       nuxeo-labs-layout {
          margin: 3%;
       }
+
+      .actions {
+        margin: 2% 0 5% 0;
+      }
     </style>
     <template>
       <nuxeo-connection id="nx"></nuxeo-connection>
@@ -34,9 +38,11 @@ Contributors:
       <form is="iron-form" id="taskForm">
          <nuxeo-labs-layout doc="{{applicationDoc}}" layout="[[taskLayout]]" mode="edit"></nuxeo-labs-layout>
       </form>
-      <template is="dom-repeat" items="{{actions}}">
-         <paper-button raised on-click="_runAction">{{item.label}}</paper-button>
-      </template>
+      <div class="actions">
+        <template is="dom-repeat" items="{{actions}}">
+           <paper-button raised on-click="_runAction">{{item.label}}</paper-button>
+        </template>
+      </div>
     </template>
 
     <script>
