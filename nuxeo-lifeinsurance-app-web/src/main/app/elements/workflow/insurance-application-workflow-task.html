@@ -24,13 +24,15 @@ Contributors:
       }
     </style>
     <template>
+      <nuxeo-connection id="nx"></nuxeo-connection>
+      <nuxeo-resource id="layoutLoader" on-response="_onLayoutReceived"></nuxeo-resource>
+      <nuxeo-document id="applicationGetter" doc-id="[[applicationId]]" on-response="_onApplicationReceived"></nuxeo-document>
+      <nuxeo-document id="applicationSetter" method="PUT" doc-id="[[applicationId]]" data=[[applicationDoc]] on-response="_onApplicationUpdated"></nuxeo-document>
+      <nuxeo-resource id="taskExecutor" method="PUT" on-response="_onTasksCompleted"></nuxeo-resource>
+      <h1>[[task.name]]</h1>
+      <div>[[task.directive]]</div>
       <form is="iron-form" id="taskForm">
-         <nuxeo-connection id="nx"></nuxeo-connection>
-         <nuxeo-resource id="layoutLoader" on-response="_onLayoutReceived"></nuxeo-resource>
-         <nuxeo-document id="applicationGetter" doc-id="[[applicationId]]" on-response="_onApplicationReceived"></nuxeo-document>
          <nuxeo-labs-layout doc="{{applicationDoc}}" layout="[[taskLayout]]" mode="edit"></nuxeo-labs-layout>
-         <nuxeo-document id="applicationSetter" method="PUT" doc-id="[[applicationId]]" data=[[applicationDoc]] on-response="_onApplicationUpdated"></nuxeo-document>
-         <nuxeo-resource id="taskExecutor" method="PUT" on-response="_onTasksCompleted"></nuxeo-resource>
       </form>
       <template is="dom-repeat" items="{{actions}}">
          <paper-button raised on-click="_runAction">{{item.label}}</paper-button>
