@@ -22,7 +22,12 @@ Contributors:
     </style>
     <template>
       <nuxeo-resource id="taskLoader" on-response="_onTasksReceived"></nuxeo-resource>
-      <insurance-application-workflow-task task=[[currentTask]]></insurance-application-workflow-task>
+      <template is="dom-if" if="[[completed]]">
+        <div>Your application has been submitted and is currently under review.</div>
+      </template>
+      <template is="dom-if" if="[[!completed]]">
+        <insurance-application-workflow-task task=[[currentTask]]></insurance-application-workflow-task>
+      </template>
     </template>
 
     <script>
@@ -33,6 +38,11 @@ Contributors:
                   processId : {
                      type: String,
                      observer: '_getProcessCurrentTask'
+                  },
+
+                  completed : {
+                    type: Boolean,
+                    value: false
                   }
             },
 
@@ -44,15 +54,20 @@ Contributors:
             },
 
             _getProcessCurrentTask: function() {
-               this.$.taskLoader.path = "task?workflowModelName=LifeInsuranceApplicationForm";
+               this.$.taskLoader.path = "task?workflowModelName=LifeInsuranceApplicationForm&workflowInstanceId="+this.processId;
                this.$.taskLoader.execute();
             },
 
             _onTasksReceived: function(e) {
-                var docs = e.detail.response.entries;
-                this.currentTask = docs[0];
+                var tasks = e.detail.response.entries;
+                if (tasks.length === 0) {
+                  this.completed = true;
+                } else {
+                  this.currentTask = tasks[0];
+                  this.completed = false;
+                }
             }
-            
+
         });
     </script>
 
