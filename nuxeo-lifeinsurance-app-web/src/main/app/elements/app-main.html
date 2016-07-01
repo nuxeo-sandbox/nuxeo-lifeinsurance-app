@@ -190,7 +190,7 @@ Contributors:
 
         currentTask: {
           type: Object,
-          notify: true,
+          notify: true
         },
 
         page: {
@@ -198,10 +198,9 @@ Contributors:
           notify: true,
           value: 'home',
         }
-
-
-
-
+      },
+      listeners: {
+        'taskChanged': '_onTaskChanged',
       },
 
       ready: function() {
@@ -241,6 +240,12 @@ Contributors:
         this.drawerWidth = '60px';
         this.drawerOpened = false;
       },
+
+      _onTaskChanged: function(e) {
+        console.log('main app task changed event');
+        this.currentTask = e.detail.task;
+        console.log(this.currentTask);
+      }
     });
   </script>
 
