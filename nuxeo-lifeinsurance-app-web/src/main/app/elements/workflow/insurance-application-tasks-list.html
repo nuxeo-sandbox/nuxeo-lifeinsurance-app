@@ -14,18 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Contributors:
-  Andre Justo <ajusto@nuxeo.com>
+  Fred Vadon <fvadon@nuxeo.com>
 -->
-<link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/nuxeo-ui-elements/nuxeo-routing-behavior.html">
+
 
 <!--
-`nuxeo-tasks-list`
-@group Nuxeo UI
-@element nuxeo-tasks-list
+`insurance-application-tasks-list`
+@group Insurance App
+@element insurance-application-tasks-list
 -->
 
-<dom-module id="nuxeo-tasks-list">
+<dom-module id="insurance-application-tasks-list">
   <template>
     <style is="custom-style" include="shared-styles">
       :host {
@@ -100,7 +99,7 @@ Contributors:
                 <div class="vertical layout center">
                   <iron-icon class="task-name-icon" icon="icons:content-paste"></iron-icon>
                 </div>
-                <span class="task-name">[[i18n(task.name)]]</span>
+                <span class="task-name">[[task.name]]</span>
               </div>
               <div class="task-detail">
                 <div class="taskDoc horizontal layout center">
@@ -123,7 +122,7 @@ Contributors:
       'use strict';
 
       Polymer({
-        is: 'nuxeo-tasks-list',
+        is: 'insurance-application-tasks-list',
 
         properties: {
           tasks: Array,
@@ -139,11 +138,10 @@ Contributors:
           }
         },
 
-        behaviors: [Nuxeo.RoutingBehavior],
-
         ready: function() {
           // tmp fix
           // see https://github.com/PolymerElements/iron-list/issues/236
+          console.log("-- Tasks List ready");
           this.$.list._didMoveDown = function() {
             this._focusPhysicalItem(this._focusedIndex + 1);
           };

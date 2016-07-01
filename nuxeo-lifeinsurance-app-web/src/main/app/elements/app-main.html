@@ -111,7 +111,7 @@ Contributors:
 
         <paper-menu class="side-nav" selected="{{selectedTab}}" attr-for-selected="name" on-iron-activate="_toggleDrawer">
           <paper-icon-button icon="icons:folder-open" name="Pending Applications"></paper-icon-button>
-          <div class="icon-badge" name="tasks">
+          <div class="icon-badge" name="Tasks">
             <paper-icon-button icon="icons:check-box" name="Tasks" id="tasksCounter"></paper-icon-button>
             <paper-badge label="[[taskCount]]" class="header-badge" for="tasksCounter"></paper-badge>
           </div>
@@ -132,7 +132,7 @@ Contributors:
                 <div class="header ellipsis">
                   <h1>Tasks</h1>
                 </div>
-                <nuxeo-tasks-list id="tasks-list" tasks="[[tasks]]" current="[[currentTask]]"  class="flex"></nuxeo-tasks-list>
+                <insurance-application-tasks-list id="tasks-list" tasks="[[tasks]]" current="[[currentTask]]"  class="flex"></insurance-application-tasks-list>
               </section>
             </iron-pages>
           </div>
