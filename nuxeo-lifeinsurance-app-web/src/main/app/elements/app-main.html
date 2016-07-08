@@ -105,12 +105,12 @@ Contributors:
   </style>
   <template>
     <nuxeo-resource id="taskLoader" on-response="_onTasksReceived" path="task?workflowModelName=LifeInsuranceApplicationForm"></nuxeo-resource>
+    <nuxeo-operation id="newApplicationOp" op="CreateNewFormAndStartWF" input="" response="{{newApplicationCreated}}"></nuxeo-operation>
     <paper-drawer-panel drawer-width="[[drawerWidth]]" responsive-width="720px">
       <div drawer>
         <paper-icon-button src="[[baseUrl]]images/touch/icon-128x128.png" class="logo" on-tap="_goHome"></paper-icon-button>
 
         <paper-menu class="side-nav" selected="{{selectedTab}}" attr-for-selected="name" on-iron-activate="_toggleDrawer">
-          <paper-icon-button icon="icons:folder-open" name="Pending Applications"></paper-icon-button>
           <div class="icon-badge" name="Tasks">
             <paper-icon-button icon="icons:check-box" name="Tasks" id="tasksCounter"></paper-icon-button>
             <paper-badge label="[[taskCount]]" class="header-badge" for="tasksCounter"></paper-badge>
@@ -147,10 +147,13 @@ Contributors:
         </paper-toolbar>
         <div>
           <iron-pages selected="[[page]]" attr-for-selected="name" class="flex">
-            <div name="Home">Home</div>
+            <div name="Home">
+              <paper-button raised on-tap="_createNewApplication">New Application</paper-button>
+
+            </div>
             <div name="Pending Applications">All Applications</div>
             <div name="Tasks" class="task">
-              <insurance-application-workflow process-id=""></insurance-application-workflow>
+              <insurance-application-workflow process-id="[[currentProcessId]]"></insurance-application-workflow>
             </div>
 
       </paper-header-panel>
@@ -197,6 +200,25 @@ Contributors:
           type: String,
           notify: true,
           value: 'home',
+        },
+
+        completed: {
+          type: Boolean,
+          value: false
+        },
+        currentProcessId: {
+          type: String,
+          notify: true,
+        },
+        currentApplicationId: {
+          type: String,
+          notify: true,
+        },
+
+        newApplicationCreated: {
+          type: Object,
+          notify: true,
+          observer: '_newApplicationCreatedReceived'
         }
       },
       listeners: {
@@ -209,6 +231,7 @@ Contributors:
           this.$.taskLoader.execute();
         });
         this.$.taskLoader.execute();
+        this.page = 'Home';
 
       },
       _toggleDrawer: function(e) {
@@ -228,10 +251,26 @@ Contributors:
       },
 
       _onTasksReceived: function(e) {
+        var i;
+        console.log('-- On tasks received');
         this.tasks = e.detail.response.entries;
         this.taskCount = this.tasks.length;
-        console.log(this.tasks);
-        console.log(this.taskCount);
+        i = this.taskCount;
+        if (this.tasks.length === 0) {
+          this.completed = true;
+        } else {
+          //this.currentTask = tasks[0];
+          this.completed = false;
+        }
+
+        if (this.currentApplicationId) {
+          while(i--) {
+              if(this.tasks[i].targetDocumentIds[0].id == this.currentApplicationId) {
+                  this.currentTask = this.tasks[i];
+                  break;
+              }
+          }
+        }
       },
 
       _goHome: function(e) {
@@ -244,7 +283,26 @@ Contributors:
       _onTaskChanged: function(e) {
         console.log('main app task changed event');
         this.currentTask = e.detail.task;
+        this.currentProcessId = e.detail.task.workflowInstanceId;
+        this.currentApplicationId = e.detail.task.targetDocumentIds[0];
         console.log(this.currentTask);
+      },
+
+      _createNewApplication: function() {
+        this.$.newApplicationOp.execute();
+      },
+
+      _newApplicationCreatedReceived: function() {
+        console.log('-- new application created');
+
+        if (this.newApplicationCreated) {
+          this.currentApplication = this.newApplicationCreated.entries[0];
+          this.currentApplicationId = this.newApplicationCreated.entries[0].uid;
+          console.log(this.currentApplication);
+          console.log(this.currentApplicationId);
+          this.$.taskLoader.execute();
+          this.page = 'Tasks';
+        }
       }
     });
   </script>
