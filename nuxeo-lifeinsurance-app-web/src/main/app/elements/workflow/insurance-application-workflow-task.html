@@ -36,7 +36,7 @@ Contributors:
       <h1>[[task.name]]</h1>
       <div>[[task.directive]]</div>
       <form is="iron-form" id="taskForm">
-         <nuxeo-labs-layout doc="{{applicationDoc}}" layout="[[taskLayout]]" mode="edit"></nuxeo-labs-layout>
+         <nuxeo-labs-layout input="{{applicationDoc.properties}}" layout="[[taskLayout]]" mode="edit"></nuxeo-labs-layout>
       </form>
       <div class="actions">
         <template is="dom-repeat" items="{{actions}}">
